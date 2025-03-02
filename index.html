@@ -269,7 +269,10 @@
             <div id="result" class="result form-group">
                 <label for="txtOutput">Converted TXT</label>
                 <textarea id="txtOutput" readonly></textarea>
-                <button id="copyBtn" class="copy-btn">Copy to Clipboard</button>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <button id="copyBtn" class="copy-btn">Copy to Clipboard</button>
+                    <button id="downloadBtn" class="copy-btn">Download as TXT</button>
+                </div>
             </div>
         </div>
         
@@ -285,6 +288,7 @@
             const convertBtn = document.getElementById('convertBtn');
             const clearBtn = document.getElementById('clearBtn');
             const copyBtn = document.getElementById('copyBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
             const fileInput = document.getElementById('fileInput');
             const fileUpload = document.getElementById('fileUpload');
             const resultDiv = document.getElementById('result');
@@ -425,6 +429,28 @@
                 copyBtn.textContent = 'Copied!';
                 setTimeout(() => {
                     copyBtn.textContent = originalText;
+                }, 2000);
+            });
+            
+            // Download button click
+            downloadBtn.addEventListener('click', () => {
+                const textContent = txtOutput.value;
+                if (!textContent) return;
+                
+                const blob = new Blob([textContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'converted_transcript.txt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                const originalText = downloadBtn.textContent;
+                downloadBtn.textContent = 'Downloaded!';
+                setTimeout(() => {
+                    downloadBtn.textContent = originalText;
                 }, 2000);
             });
             
