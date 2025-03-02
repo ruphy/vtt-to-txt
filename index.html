@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTT to TXT Converter</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-color: #f9fafb;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --error-color: #ef4444;
+            --success-color: #10b981;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2rem;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            resize: vertical;
+            font-family: inherit;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.15s ease-in-out;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            border: 2px dashed #d1d5db;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: border-color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary);
+            background-color: rgba(99, 102, 241, 0.05);
+        }
+
+        .file-upload-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .file-upload-text {
+            text-align: center;
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        button {
+            cursor: pointer;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            transition: all 0.15s ease-in-out;
+            font-size: 1rem;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-color);
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background-color: #f3f4f6;
+        }
+
+        .result {
+            display: none;
+        }
+
+        .spinner {
+            display: none;
+            width: 2rem;
+            height: 2rem;
+            border: 3px solid rgba(99, 102, 241, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-error {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error-color);
+            color: var(--error-color);
+        }
+
+        .alert-success {
+            background-color: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+        }
+
+        .copy-btn {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid currentColor;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+            transition: all 0.15s ease-in-out;
+        }
+
+        .copy-btn:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        footer {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 1rem;
+            }
+            .card {
+                padding: 1.5rem;
+            }
+            .buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>VTT to TXT Converter</h1>
+        <p style="text-align: center; margin-top: -1rem; margin-bottom: 2rem; color: #6b7280;">Client-side conversion - no data is sent to any server</p>
+        
+        <div class="card">
+            <div id="errorAlert" class="alert alert-error" style="display: none;">
+                <span id="errorMessage"></span>
+            </div>
+            
+            <div id="successAlert" class="alert alert-success" style="display: none;">
+                Conversion successful!
+            </div>
+            
+            <div class="form-group">
+                <label for="vttInput">Paste VTT Content</label>
+                <textarea id="vttInput" placeholder="Paste your VTT content here..."></textarea>
+                
+                <div class="file-upload" id="fileUpload">
+                    <svg class="file-upload-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <p class="file-upload-text">Drag & drop your VTT file here or click to browse</p>
+                    <input type="file" id="fileInput" accept=".vtt" />
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <button id="convertBtn" class="btn-primary">Convert to TXT</button>
+                <button id="clearBtn" class="btn-secondary">Clear</button>
+            </div>
+            
+            <div id="spinner" class="spinner"></div>
+            
+            <div id="result" class="result form-group">
+                <label for="txtOutput">Converted TXT</label>
+                <textarea id="txtOutput" readonly></textarea>
+                <button id="copyBtn" class="copy-btn">Copy to Clipboard</button>
+            </div>
+        </div>
+        
+        <footer>
+            100% client-side VTT to TXT converter - Fast, Secure, and Private
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const vttInput = document.getElementById('vttInput');
+            const txtOutput = document.getElementById('txtOutput');
+            const convertBtn = document.getElementById('convertBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            const fileInput = document.getElementById('fileInput');
+            const fileUpload = document.getElementById('fileUpload');
+            const resultDiv = document.getElementById('result');
+            const spinner = document.getElementById('spinner');
+            const errorAlert = document.getElementById('errorAlert');
+            const errorMessage = document.getElementById('errorMessage');
+            const successAlert = document.getElementById('successAlert');
+            
+            // VTT to TXT conversion function implemented in JavaScript
+            function convertVttToTxt(rawText) {
+                try {
+                    // Improved regex to handle <v Speaker>text format without closing tags
+                    const pattern = /<v ([^>]+)>(.*)/g;
+                    const matches = [...rawText.matchAll(pattern)];
+                    
+                    if (matches.length === 0) {
+                        throw new Error("No valid VTT content found. Make sure your file contains <v Speaker>text tags.");
+                    }
+                    
+                    // Clean up whitespaces in dialogues
+                    const structuredLines = matches.map(match => {
+                        const speaker = match[1].trim();
+                        const dialogue = match[2].trim().replace(/\s+/g, ' ');
+                        return [speaker, dialogue];
+                    });
+                    
+                    const combinedLines = [];
+                    let previousSpeaker = null;
+                    let currentDialogue = [];
+                    
+                    for (const [speaker, dialogue] of structuredLines) {
+                        if (speaker === previousSpeaker) {
+                            currentDialogue.push(dialogue);
+                        } else {
+                            if (previousSpeaker !== null) {
+                                combinedLines.push(`${previousSpeaker}: ${currentDialogue.join(' ')}`);
+                            }
+                            previousSpeaker = speaker;
+                            currentDialogue = [dialogue];
+                        }
+                    }
+                    
+                    if (previousSpeaker !== null) {
+                        combinedLines.push(`${previousSpeaker}: ${currentDialogue.join(' ')}`);
+                    }
+                    
+                    return combinedLines.join('\n\n');
+                } catch (error) {
+                    throw new Error(`Conversion error: ${error.message}`);
+                }
+            }
+            
+            // File upload handling
+            fileUpload.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            fileUpload.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileUpload.style.borderColor = '#6366f1';
+                fileUpload.style.backgroundColor = 'rgba(99, 102, 241, 0.05)';
+            });
+            
+            fileUpload.addEventListener('dragleave', () => {
+                fileUpload.style.borderColor = '#d1d5db';
+                fileUpload.style.backgroundColor = 'transparent';
+            });
+            
+            fileUpload.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileUpload.style.borderColor = '#d1d5db';
+                fileUpload.style.backgroundColor = 'transparent';
+                
+                if (e.dataTransfer.files.length) {
+                    handleFile(e.dataTransfer.files[0]);
+                }
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length) {
+                    handleFile(e.target.files[0]);
+                }
+            });
+            
+            function handleFile(file) {
+                if (!file.name.endsWith('.vtt')) {
+                    showError('Please upload a .vtt file');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    vttInput.value = e.target.result;
+                };
+                reader.readAsText(file);
+            }
+            
+            // Convert button click
+            convertBtn.addEventListener('click', () => {
+                const vttContent = vttInput.value.trim();
+                if (!vttContent) {
+                    showError('Please enter or upload VTT content');
+                    return;
+                }
+                
+                hideAlerts();
+                showSpinner();
+                
+                // Use setTimeout to give the UI a chance to update before starting the conversion
+                setTimeout(() => {
+                    try {
+                        const result = convertVttToTxt(vttContent);
+                        txtOutput.value = result;
+                        resultDiv.style.display = 'block';
+                        showSuccess();
+                    } catch (error) {
+                        showError(error.message);
+                    } finally {
+                        hideSpinner();
+                    }
+                }, 50);
+            });
+            
+            // Clear button click
+            clearBtn.addEventListener('click', () => {
+                vttInput.value = '';
+                txtOutput.value = '';
+                resultDiv.style.display = 'none';
+                hideAlerts();
+                fileInput.value = '';
+            });
+            
+            // Copy button click
+            copyBtn.addEventListener('click', () => {
+                txtOutput.select();
+                document.execCommand('copy');
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+            });
+            
+            // Helper functions
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorAlert.style.display = 'block';
+                successAlert.style.display = 'none';
+            }
+            
+            function showSuccess() {
+                successAlert.style.display = 'block';
+                errorAlert.style.display = 'none';
+            }
+            
+            function hideAlerts() {
+                errorAlert.style.display = 'none';
+                successAlert.style.display = 'none';
+            }
+            
+            function showSpinner() {
+                spinner.style.display = 'block';
+                convertBtn.disabled = true;
+            }
+            
+            function hideSpinner() {
+                spinner.style.display = 'none';
+                convertBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
